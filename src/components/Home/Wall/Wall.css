@@ -1,6 +1,5 @@
 .Wall {
-  min-height: 496px;
-  max-height: 500px;
+  height: 326px;
   display: flex;
 }
 
@@ -42,7 +41,7 @@
 }
 
 .ClearWallButton {
-  height: 50px;
+  height: 20%;
   width: 100%;
   background-color: #22aa22;
   color: white;
@@ -56,7 +55,7 @@
 }
 
 .ChangePetButton {
-  height: 50px;
+  height: 20%;
   width: 100%;
   background-color: #aa2284;
   color: white;

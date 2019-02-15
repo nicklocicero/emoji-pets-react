@@ -1,0 +1,16 @@
+.EmojiDiv {
+  display: flex;
+  flex-wrap: wrap;
+  overflow-y: auto;
+  height: 400px;
+  font-size: 1.5rem;
+  padding: 8px;
+  margin-bottom: 18px;
+  border: solid 1px dodgerblue;
+}
+
+.Emojis:hover,
+.Emojis:active {
+  cursor: pointer;
+  background-color: dodgerblue;
+}

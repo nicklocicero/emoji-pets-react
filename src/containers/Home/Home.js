@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
+import axios from "../../axios-pets";
 
 import StatusInput from "../../components/Home/StatusInput/StatusInput";
 import Status from "../../components/Home/Status/Status";
@@ -8,21 +10,23 @@ import Wall from "../../components/Home/Wall/Wall";
 import classes from "./Home.css";
 import Modal from "../../components/UI/Modal/Modal";
 import Aux from "../../hoc/Aux/Aux";
+import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
+import * as actions from "../../store/actions/index";
 
 class Home extends Component {
   state = {
     wall: "some writing from some people see?",
     wallEdit: "",
-    pet: "🍜",
     statusInput: "",
-    statuses: [
-      "I want you to want me!",
-      "she love that love you know that love that love that love",
-      "It's gonna take a lot to drag me away from you; There's nothing that a hundred men or more could ever do "
-    ],
     edittingWall: false,
-    edittingPet: false
+    edittingPet: false,
+    emojiKey: 2,
+    petNameEdit: ""
   };
+  
+  componentDidMount() {
+    this.props.onFetchStatuses(this.props.token, this.props.userId);
+  }
 
   saveWallEditHandler = () => {
     this.setState({ edittingWall: true, wallEdit: this.state.wall });
@@ -50,13 +54,27 @@ class Home extends Component {
 
   editPetHandler = () => {
     this.setState({
-      edittingPet: true
+      edittingPet: true,
+      petNameEdit: this.state.petName
     });
   };
-  
+
+  petSaveHandler = () => {
+    this.setState({
+      petName: this.state.petNameEdit,
+      petNameEdit: "",
+      edittingPet: false,
+      pet: emojis[this.state.emojiKey]
+    });
+  };
+
   setPetHandler = id => {
-    this.setState({pet: emojis[id], edittingPet: false});
-  }
+    this.setState({ emojiKey: id });
+  };
+
+  petInputHandler = event => {
+    this.setState({ petNameEdit: event.target.value });
+  };
 
   statusInputHandler = event => {
     this.setState({ statusInput: event.target.value });
@@ -64,24 +82,40 @@ class Home extends Component {
 
   addStatusHandler = event => {
     event.preventDefault();
-    console.log(this.state.statuses);
-    const newStatusList = [...this.state.statuses];
-    newStatusList.push(this.state.statusInput);
-    this.setState({ statuses: newStatusList, statusInput: "" });
+    const newStatus = {
+      status: this.state.statusInput,
+      userId: this.props.userId
+    }
+    this.props.onPostStatus(newStatus, this.props.token);
+  };
+
+  petNameInputHandler = event => {
+    this.setState({ petNameEdit: event.target.value });
   };
 
   render() {
     const statuses = [];
 
-    for (let i = this.state.statuses.length - 1; i >= 0; i--) {
+    for (let i = this.props.statuses.length - 1; i >= 0; i--) {
       // Going backwards to get most recent first
-      statuses.push(<Status content={this.state.statuses[i]} key={i} />);
+      statuses.push(<Status content={this.props.statuses[i].status} key={i} />);
     }
 
     const emojisView = emojis.map((emoj, index) => (
-      <div className={classes.Emojis} key={index} onClick={() => this.setPetHandler(index)}>{emoj}</div>
+      <div
+        className={classes.Emojis}
+        key={index}
+        onClick={() => this.setPetHandler(index)}
+        style={
+          this.props.emojiIndex === index
+            ? { backgroundColor: "dodgerblue" }
+            : null
+        }
+      >
+        {emoj}
+      </div>
     ));
-
+    console.log("the emoji should be: ", emojis[this.props.emojiIndex]);
     return (
       <Aux>
         <Modal
@@ -106,20 +140,37 @@ class Home extends Component {
           show={this.state.edittingPet}
           modalClosed={this.cancelPetHandler}
         >
+          <StatusInput
+            value={this.state.petNameEdit}
+            changed={event => this.petInputHandler(event)}
+            styleSpecific={{
+              border: "1px solid dodgerblue",
+              backgroundColor: "white",
+              color: "dodgerblue"
+            }}
+          />
           <div className={classes.EmojiDiv}>{emojisView}</div>
+          <button onClick={this.cancelPetHandler} className={classes.cancel}>
+            CANCEL
+          </button>
+          <button onClick={this.petSaveHandler} className={classes.save}>
+            SAVE
+          </button>
         </Modal>
 
         <div className={classes.Home}>
           <StatusInput
-            clicked={this.clearWallHandler}
             value={this.state.statusInput}
             changed={event => this.statusInputHandler(event)}
-            set={event => this.addStatusHandler(event)}
+            set={this.addStatusHandler}
+            placeHolder="Enter a new status..."
+            isStatus={true}
           />
           <Wall
             isEditable={this.state.editable}
             wall={this.state.wall}
-            pet={this.state.pet}
+            pet={emojis[this.props.emojiIndex]}
+            petName={this.props.emojiPetName}
             petClicked={this.editPetHandler}
             wallClicked={this.saveWallEditHandler}
           />
@@ -130,4 +181,28 @@ class Home extends Component {
   }
 }
 
-export default Home;
+const mapStateToProps = state => {
+  return {
+    isAuthenticated: state.auth.token !== null,
+    statuses: state.statuses.statuses,
+    loading: state.statuses.loading,
+    token: state.auth.token,
+    userId: state.auth.userId,
+    emojiIndex: state.auth.emojiIndex,
+    emojiPetName: state.auth.emojiPetName
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onSetAuthRedirectPath: path => dispatch(actions.setAuthRedirectPath(path)),
+    onPostStatus: (postData, token) =>
+      dispatch(actions.postStatus(postData, token)),
+    onFetchStatuses: (token, userId) => dispatch(actions.fetchedStatuses(token, userId))
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(withErrorHandler(Home, axios));

@@ -1,9 +1,12 @@
 .Input {
   width: 100%;
   padding: 0px;
-  margin-top: 48px;
   box-sizing: border-box;
   align-items: center;
+}
+
+.Input form {
+  display: flex;
 }
 
 .StatusButton {
@@ -22,11 +25,12 @@
 
 .InputElement {
   outline: none;
+  height: 50px;
   border: 1px solid rgb(255, 60, 0);
   background-color: white;
   color: rgb(255, 60, 0);
   font: inherit;
-  font-style: italic;
+  font-weight:bold;
   padding: 10px;
   margin-bottom: 24px;
   width: 100%;
