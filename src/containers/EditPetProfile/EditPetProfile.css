@@ -1,0 +1,20 @@
+.EditPetProfile {
+  width: 80%;
+  margin: 0 auto;
+  display: block;
+  padding-top: 72px;
+  min-width: 322px;
+}
+
+.EmojiDiv {
+  display: flex;
+  flex-wrap: wrap;
+  overflow-y: auto;
+  height: 200px;
+}
+
+.Emojis:hover,
+.Emojis:active {
+  cursor: pointer;
+  background-color: dodgerblue;
+}

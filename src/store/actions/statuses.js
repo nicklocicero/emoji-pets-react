@@ -41,44 +41,80 @@ export const postInit = () => {
   };
 };
 
-export const fetchedStatusesFail = error => {
+export const fetchUserStatusesFail = error => {
   return {
-    type: actionTypes.FETCHED_STATUSES_FAIL,
+    type: actionTypes.FETCH_USER_STATUSES_FAIL,
     error: error
   };
 };
 
-export const fetchedStatusesSuccess = statuses => {
+export const fetchUserStatusesSuccess = statuses => {
   return {
-    type: actionTypes.FETCHED_STATUSES_SUCCESS,
+    type: actionTypes.FETCH_USER_STATUSES_SUCCESS,
     statuses: statuses
   };
 };
 
-export const fetchedStatusesStart = () => {
+export const fetchUserStatusesStart = () => {
   return {
-    type: actionTypes.FETCHED_STATUSES_START
+    type: actionTypes.FETCH_USER_STATUSES_START
   };
 };
 
-export const fetchedStatuses = (token, userId = null) => {
+export const fetchUserStatuses = (token, userId = null) => {
   return dispatch => {
-    dispatch(fetchedStatusesStart());
+    dispatch(fetchUserStatusesStart());
     let queryParams = "?auth=" + token;
     if (userId) {
-      queryParams = '?auth=' + token + '&orderBy="userId"&equalTo="' + userId + '"';
+      queryParams =
+        "?auth=" + token + '&orderBy="userId"&equalTo="' + userId + '"';
     }
     axios
       .get("/statuses.json" + queryParams)
       .then(res => {
-        const  fetchedStatuses = [];
+        const fetchUserStatuses = [];
         for (let key in res.data) {
-           fetchedStatuses.push({ ...res.data[key], id: key });
+          fetchUserStatuses.push({ ...res.data[key], id: key });
         }
-        dispatch(fetchedStatusesSuccess( fetchedStatuses));
+        dispatch(fetchUserStatusesSuccess(fetchUserStatuses));
       })
       .catch(err => {
-        dispatch(fetchedStatusesFail(err));
+        dispatch(fetchUserStatusesFail(err));
       });
+  };
+};
+
+export const deleteStatus = (token, id) => {
+  return dispatch => {
+    dispatch(deleteStatusStart());
+    axios
+      .delete("/statuses/" + id + ".json?auth=" + token)
+      .then(res => {
+        console.log(res);
+        dispatch(deleteStatusSuccess(id));
+      })
+      .catch(err => {
+        dispatch(deleteStatusFail(err));
+      });
+  }
+}
+
+export const deleteStatusStart = () => {
+  return {
+    type: actionTypes.DELETE_STATUS_START
+  };
+};
+
+export const deleteStatusSuccess = id => {
+  return {
+    type: actionTypes.DELETE_STATUS_SUCCESS,
+    id: id
+  };
+}
+
+export const deleteStatusFail = error => {
+  return {
+    type: actionTypes.DELETE_STATUS_FAIL,
+    error: error
   };
 };

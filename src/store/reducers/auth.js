@@ -8,7 +8,8 @@ const initialState = {
   loading: false,
   authRedirectPath: "/react/emoji-pets",
   emojiIndex: null,
-  emojiPetName: ""
+  emojiPetName: "",
+  wall: ""
 };
 
 const authStart = (state, action) => {
@@ -42,8 +43,10 @@ const setAuthRedirectPath = (state, action) => {
 
 const signupRequestSuccess = (state, action) => {
   return updateObject(state, {
-    emojiIndex: action.emojiIndex,
-    emojiPetName: action.emojiPetName
+    emojiIndex: action.userInformation.emojiIndex,
+    emojiPetName: action.userInformation.emojiPetName,
+    emojiBio: action.userInformation.emojiBio,
+    wall: action.userInformation.wall
   });
 };
 
@@ -52,6 +55,12 @@ const signupRequestFail = (state, action) => {
     error: action.error
   });
 };
+
+const setWall = (state, action) => {
+  return updateObject(state, {
+    wall: action.wall
+  })
+}
 
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -69,6 +78,8 @@ const reducer = (state = initialState, action) => {
       return signupRequestSuccess(state, action);
     case actionTypes.SIGNUP_REQUEST_FAIL:
       return signupRequestFail(state, action);
+    case actionTypes.USER_WALL_UPDATE:
+      return setWall(state, action);
     default:
       return state;
   }

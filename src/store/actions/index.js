@@ -1,2 +1,3 @@
-export { auth, logout, setAuthRedirectPath, authCheckState } from "./auth";
-export { postStatus, fetchedStatuses } from './statuses';
+export { auth, logout, setAuthRedirectPath, authCheckState, setPet, setWall } from "./auth";
+export { postStatus, fetchUserStatuses, deleteStatus } from './statuses';
+export { fetchUsers, patchWall } from './users';

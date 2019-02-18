@@ -1,0 +1,28 @@
+.Friend {
+  background-color: white;
+  color: rgb(0, 50, 215);
+  font: inherit;
+  padding: 10px;
+  margin: 8px 6px;
+  width: 352px;
+  height: 300px;
+  display: inline-block;
+  box-sizing: border-box;;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  position: relative;
+}
+
+@media (max-width: 500px) {
+  .Friend {
+    width: 90%;
+  }
+}
+
+.PetContent {
+  height: 90%;
+  width: 100%;
+  margin: 0;
+  font-family: Monaco, courier;
+  align-items: center;
+  text-align: center;
+}

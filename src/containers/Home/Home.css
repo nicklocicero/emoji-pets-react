@@ -6,15 +6,7 @@
   min-width: 322px;
 }
 
-.EmojiDiv {
-  display: flex;
-  flex-wrap: wrap;
-  overflow-y: auto;
-  height: 200px;
-}
-
-.Emojis:hover,
-.Emojis:active {
-  cursor: pointer;
-  background-color: dodgerblue;
+.Title {
+  text-align: center;
+  color: rgb(0, 50, 215);
 }

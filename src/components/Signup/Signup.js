@@ -19,6 +19,12 @@ const signup = props => {
         value={props.emojiPetName}
         changed={props.setEmojiNameHandler}
       />
+      <Input
+        elementType="input"
+        label="Emoji's Bio"
+        value={props.emojiBio}
+        changed={props.setEmojiBioHandler}
+      />
     </div>
   );
 };

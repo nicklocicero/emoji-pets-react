@@ -8,7 +8,6 @@ import Spinner from "../../components/UI/Spinner/Spinner";
 import classes from "./Auth.css";
 import * as actions from "../../store/actions/index";
 import { updateObject, checkValidity } from "../../shared/utility";
-import EmojiPicker from "../../components/Signup/EmojiPicker/EmojiPicker";
 import Signup from "../../components/Signup/Signup";
 
 class Auth extends Component {
@@ -45,15 +44,22 @@ class Auth extends Component {
     },
     isSignup: false,
     emojiIndex: null,
-    emojiPetName: ""
+    emojiPetName: "",
+    emojiBio: ""
   };
 
   componentWillMount() {
-    if (!this.props.buildingBurger && this.props.authRedirectPath) {
+    if (this.props.authRedirectPath) {
       this.props.onSetAuthRedirectPath();
     }
   }
 
+  componentWillUnmount() {
+    if (this.props.auth) {
+      this.props.onFetchUsers(this.props.auth);
+    }
+  }
+  
   inputChangedHandler = (event, controlName) => {
     const updatedControls = updateObject(this.state.controls, {
       [controlName]: updateObject(this.state.controls[controlName], {
@@ -74,8 +80,12 @@ class Auth extends Component {
       this.state.controls.email.value,
       this.state.controls.password.value,
       this.state.isSignup,
-      this.state.emojiIndex,
-      this.state.emojiPetName
+      {
+        emojiIndex: this.state.emojiIndex,
+        emojiPetName: this.state.emojiPetName,
+        emojiBio: this.state.emojiBio,
+        wall: ""
+      }
     );
   };
 
@@ -91,6 +101,14 @@ class Auth extends Component {
 
   setEmojiNameHandler = event => {
     this.setState({ emojiPetName: event.target.value });
+  };
+
+  setEmojiBioHandler = event => {
+    if (event.target.value.length < 171) {
+      this.setState({
+        emojiBio: event.target.value
+      });
+    }
   };
 
   render() {
@@ -138,6 +156,8 @@ class Auth extends Component {
         setEmojiNameHandler={event => this.setEmojiNameHandler(event)}
         emojiIndex={this.state.emojiIndex}
         emojiPetName={this.state.emojiPetName}
+        emojiBio={this.state.emojiBio}
+        setEmojiBioHandler={this.setEmojiBioHandler}
       />
     );
 
@@ -164,6 +184,7 @@ const mapStateToProps = state => {
   return {
     loading: state.auth.loading,
     error: state.auth.error,
+    auth: state.auth.token,
     isAuthenticated: state.auth.token !== null,
     authRedirectPath: state.auth.authRedirectPath
   };
@@ -171,9 +192,10 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    onAuth: (email, password, isSignup, emojiIndex, emojiPetName) =>
-      dispatch(actions.auth(email, password, isSignup, emojiIndex, emojiPetName)),
-    onSetAuthRedirectPath: () => dispatch(actions.setAuthRedirectPath("/"))
+    onAuth: (email, password, isSignup, userInformation) =>
+      dispatch(actions.auth(email, password, isSignup, userInformation)),
+    onSetAuthRedirectPath: () => dispatch(actions.setAuthRedirectPath("/")),
+    onFetchUsers: token => dispatch(actions.fetchUsers(token))
   };
 };
 

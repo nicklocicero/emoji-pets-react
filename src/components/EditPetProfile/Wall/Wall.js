@@ -20,7 +20,6 @@ const wall = props => {
         <Textfit mode="single" forceSingleModeWidth={true} max={144} style={{margin: '0 auto', height: "80%"}}>
           <p className={classes.PetContent}>{props.pet}</p>
         </Textfit>
-        
         <button className={classes.ChangePetButton} onClick={props.petClicked}>
           {"CHANGE " + props.petName}
         </button>

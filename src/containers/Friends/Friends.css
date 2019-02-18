@@ -1,0 +1,25 @@
+.Friends {
+  width: 80%;
+  color: rgb(0, 50, 215);
+  margin: 0 auto;
+  display: block;
+  padding-top: 32px;
+  min-width: 500px;
+  align-items: center;
+  text-align: center;
+}
+
+.FriendsDiv {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center
+}
+
+@media (max-width: 500px) {
+  .FriendsDiv {
+    flex-direction: column;
+  }
+}

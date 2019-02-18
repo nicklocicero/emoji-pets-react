@@ -2,181 +2,77 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import axios from "../../axios-pets";
 
-import StatusInput from "../../components/Home/StatusInput/StatusInput";
-import Status from "../../components/Home/Status/Status";
-import { emojis } from "../../resources/Emojis/Emojis";
-
-import Wall from "../../components/Home/Wall/Wall";
 import classes from "./Home.css";
-import Modal from "../../components/UI/Modal/Modal";
-import Aux from "../../hoc/Aux/Aux";
+import BigInput from "../../components/UI/BigInput/BigInput";
+import Status from "../../components/UI/Status/Status";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
 import * as actions from "../../store/actions/index";
+import { emojis } from "../../resources/Emojis/Emojis";
 
 class Home extends Component {
   state = {
-    wall: "some writing from some people see?",
-    wallEdit: "",
-    statusInput: "",
-    edittingWall: false,
-    edittingPet: false,
-    emojiKey: 2,
-    petNameEdit: ""
+    statusInput: ""
   };
   
   componentDidMount() {
-    this.props.onFetchStatuses(this.props.token, this.props.userId);
+    this.props.onFetchStatuses(this.props.token);
   }
 
-  saveWallEditHandler = () => {
-    this.setState({ edittingWall: true, wallEdit: this.state.wall });
-  };
-
-  cancelEditHandler = () => {
-    this.setState({ edittingWall: false });
-  };
-
-  wallEditHandler = event => {
-    this.setState({ wallEdit: event.target.value });
-  };
-
-  wallSaveHandler = () => {
-    this.setState({
-      wall: this.state.wallEdit,
-      wallEdit: "",
-      edittingWall: false
-    });
-  };
-
-  cancelPetHandler = () => {
-    this.setState({ edittingPet: false });
-  };
-
-  editPetHandler = () => {
-    this.setState({
-      edittingPet: true,
-      petNameEdit: this.state.petName
-    });
-  };
-
-  petSaveHandler = () => {
-    this.setState({
-      petName: this.state.petNameEdit,
-      petNameEdit: "",
-      edittingPet: false,
-      pet: emojis[this.state.emojiKey]
-    });
-  };
-
-  setPetHandler = id => {
-    this.setState({ emojiKey: id });
-  };
-
-  petInputHandler = event => {
-    this.setState({ petNameEdit: event.target.value });
+  addStatusHandler = event => {
+    event.preventDefault();
+    const newStatus = {
+      status: this.state.statusInput,
+      userId: this.props.userId,
+      emojiIndex: this.props.emojiIndex,
+      emojiPetName: this.props.emojiPetName
+    };
+    this.setState({ statusInput: "" });
+    this.props.onPostStatus(newStatus, this.props.token);
   };
 
   statusInputHandler = event => {
     this.setState({ statusInput: event.target.value });
   };
 
-  addStatusHandler = event => {
-    event.preventDefault();
-    const newStatus = {
-      status: this.state.statusInput,
-      userId: this.props.userId
-    }
-    this.props.onPostStatus(newStatus, this.props.token);
-  };
-
-  petNameInputHandler = event => {
-    this.setState({ petNameEdit: event.target.value });
+  deleteStatus = (token, postId) => {
+    this.props.onDeleteStatus(this.props.token, postId);
   };
 
   render() {
     const statuses = [];
-
     for (let i = this.props.statuses.length - 1; i >= 0; i--) {
-      // Going backwards to get most recent first
-      statuses.push(<Status content={this.props.statuses[i].status} key={i} />);
+      statuses.push(
+        <Status
+          emoji={
+            emojis[
+              this.props.statuses[i].emojiIndex
+            ]
+          }
+          content={this.props.statuses[i].status}
+          key={i}
+          name={
+            this.props.statuses[i].emojiPetName
+          }
+          isUsers={this.props.statuses[i].userId === this.props.userId}
+          onPress={() =>
+            this.deleteStatus(this.props.token, this.props.statuses[i].id)
+          }
+        />
+      );
     }
 
-    const emojisView = emojis.map((emoj, index) => (
-      <div
-        className={classes.Emojis}
-        key={index}
-        onClick={() => this.setPetHandler(index)}
-        style={
-          this.props.emojiIndex === index
-            ? { backgroundColor: "dodgerblue" }
-            : null
-        }
-      >
-        {emoj}
-      </div>
-    ));
-    console.log("the emoji should be: ", emojis[this.props.emojiIndex]);
     return (
-      <Aux>
-        <Modal
-          show={this.state.edittingWall}
-          modalClosed={this.cancelEditHandler}
-        >
-          <textarea
-            rows="7"
-            value={this.state.wallEdit}
-            style={{ height: "auto", width: "100%" }}
-            onChange={event => this.wallEditHandler(event)}
-          />
-          <button onClick={this.cancelEditHandler} className={classes.cancel}>
-            CANCEL
-          </button>
-          <button onClick={this.wallSaveHandler} className={classes.save}>
-            SAVE
-          </button>
-        </Modal>
-
-        <Modal
-          show={this.state.edittingPet}
-          modalClosed={this.cancelPetHandler}
-        >
-          <StatusInput
-            value={this.state.petNameEdit}
-            changed={event => this.petInputHandler(event)}
-            styleSpecific={{
-              border: "1px solid dodgerblue",
-              backgroundColor: "white",
-              color: "dodgerblue"
-            }}
-          />
-          <div className={classes.EmojiDiv}>{emojisView}</div>
-          <button onClick={this.cancelPetHandler} className={classes.cancel}>
-            CANCEL
-          </button>
-          <button onClick={this.petSaveHandler} className={classes.save}>
-            SAVE
-          </button>
-        </Modal>
-
-        <div className={classes.Home}>
-          <StatusInput
-            value={this.state.statusInput}
-            changed={event => this.statusInputHandler(event)}
-            set={this.addStatusHandler}
-            placeHolder="Enter a new status..."
-            isStatus={true}
-          />
-          <Wall
-            isEditable={this.state.editable}
-            wall={this.state.wall}
-            pet={emojis[this.props.emojiIndex]}
-            petName={this.props.emojiPetName}
-            petClicked={this.editPetHandler}
-            wallClicked={this.saveWallEditHandler}
-          />
-          {statuses}
-        </div>
-      </Aux>
+      <div className={classes.Home}>
+        <h1 className={classes.Title}>EmojiPets Feed</h1>
+        <BigInput
+          value={this.state.statusInput}
+          changed={event => this.statusInputHandler(event)}
+          set={this.addStatusHandler}
+          placeHolder="Enter a new status..."
+          isStatus={true}
+        />
+        {statuses}
+      </div>
     );
   }
 }
@@ -189,16 +85,17 @@ const mapStateToProps = state => {
     token: state.auth.token,
     userId: state.auth.userId,
     emojiIndex: state.auth.emojiIndex,
-    emojiPetName: state.auth.emojiPetName
+    emojiPetName: state.auth.emojiPetName,
+    users: state.users.users
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    onSetAuthRedirectPath: path => dispatch(actions.setAuthRedirectPath(path)),
     onPostStatus: (postData, token) =>
       dispatch(actions.postStatus(postData, token)),
-    onFetchStatuses: (token, userId) => dispatch(actions.fetchedStatuses(token, userId))
+    onFetchStatuses: token => dispatch(actions.fetchUserStatuses(token)),
+    onDeleteStatus: (token, id) => dispatch(actions.deleteStatus(token, id))
   };
 };
 

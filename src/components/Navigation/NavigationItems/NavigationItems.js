@@ -12,11 +12,11 @@ const navigationItems = props => {
   if (props.isAuthenticated) {
     links = (
       <ul className={classes.NavigationItems}>
-        <NavigationItem link="/react/emojiPets">Home</NavigationItem>
-        <NavigationItem link="react/emojiPets">Friends</NavigationItem>
-        <NavigationItem link="/react/emojiPets/settings">
-          Edit My Pet
-        </NavigationItem>
+        <NavigationItem link="/react/emoji-pets">Home</NavigationItem>   
+        <NavigationItem link="/react/emoji-pets/friends">Friends</NavigationItem>   
+        <NavigationItem link="/react/emoji-pets/edit-pet-profile">
+          Edit Pet Profile
+        </NavigationItem>   
         <NavigationItem link="/react/emoji-pets/logout">Logout</NavigationItem>
       </ul>
     );

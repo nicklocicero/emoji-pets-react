@@ -42,11 +42,10 @@ export const checkAuthTimeout = expirationDate => {
   };
 };
 
-export const signupRequestSuccess = (id, userInformation) => {
+export const signupRequestSuccess = (userInformation) => {
   return {
     type: actionTypes.SIGNUP_REQUEST_SUCCESS,
-    emojiIndex: userInformation.emojiIndex,
-    emojiPetName: userInformation.emojiPetName
+    userInformation: userInformation
   };
 };
 
@@ -57,12 +56,31 @@ export const signupRequestFail = error => {
   };
 };
 
+export const getUserData = response => {
+  return dispatch => {
+    axiosInstance
+      .get(
+        "/users/" +
+          response.data.localId +
+          "/userData.json?auth=" +
+          response.data.idToken
+      )
+      .then(response => {
+        dispatch(
+          signupRequestSuccess(response.data)
+        );
+      })
+      .catch(error => {
+        dispatch(signupRequestFail(error));
+      });
+  };
+};
+
 export const auth = (
   email,
   password,
   isSignup,
-  emojiIndex = null,
-  emojiPetName = null
+  userInformation
 ) => {
   return dispatch => {
     dispatch(authStart());
@@ -76,8 +94,8 @@ export const auth = (
       config.apiKey;
 
     if (isSignup) {
-      if (emojiIndex === null || emojiPetName === "") {
-        dispatch(authFail("Enter all information"));
+      if (userInformation.emojiIndex === null || userInformation.emojiPetName === "" || userInformation.emojiBio === "") {
+        dispatch(authFail("Enter all information please."));
         return;
       }
       url =
@@ -90,40 +108,32 @@ export const auth = (
         const expirationDate = new Date(
           new Date().getTime() + response.data.expiresIn * 1000
         );
-        console.log("first responses: ", response);
-        const userId = response.data.localId;
-        const idToken = response.data.idToken;
         localStorage.setItem("token", response.data.idToken);
         localStorage.setItem("expirationDate", expirationDate);
         localStorage.setItem("userId", response.data.localId);
         dispatch(authSuccess(response.data.idToken, response.data.localId));
         dispatch(checkAuthTimeout(response.data.expiresIn));
+        userInformation["userId"] = response.data.localId
         if (isSignup) {
-          const userInformation = {
-            userId: response.data.localId,
-            emojiIndex: emojiIndex,
-            emojiPetName: emojiPetName
-          };
           axiosInstance
-            .post("/users.json?auth=" + response.data.idToken, userInformation)
+            .put(
+              "/users/" +
+                response.data.localId +
+                "/userData.json?auth=" +
+                response.data.idToken,
+              userInformation
+            )
             .then(response => {
-              dispatch(signupRequestSuccess(response.data.name, userInformation));
+              dispatch(
+                signupRequestSuccess(userInformation)
+              );
             })
             .catch(error => {
               dispatch(signupRequestFail(error));
             });
         } else {
-          axiosInstance
-            .get("/users.json?auth=" + idToken + '&orderBy="userId"&equalTo="' + userId + '"')
-            .then(response => {
-              console.log("This is the respsone from login: ", response.data);
-              for (let key in response.data) {
-                dispatch(signupRequestSuccess(response.data[key.userId], response.data[key]));
-              }
-            })
-            .catch(error => {
-              dispatch(signupRequestFail(error));
-            });
+          // console.log("Id: ", response.data.localId, " | Token: ", response.data.idToken);
+          dispatch(getUserData(response));
         }
       })
       .catch(err => {
@@ -136,6 +146,47 @@ export const setAuthRedirectPath = path => {
   return {
     type: actionTypes.SET_AUTH_REDIRECT_PATH,
     path: path
+  };
+};
+
+export const setPet = (token, userId, emojiIndex, emojiPetName) => {
+  return dispatch => {
+    axiosInstance
+      .patch("/users/" + userId + "/userData.json?auth=" + token, {
+        emojiIndex: emojiIndex,
+        emojiPetName: emojiPetName
+      })
+      .then(response => {
+        dispatch(
+          signupRequestSuccess(response.data)
+        );
+      })
+      .catch(error => {
+        dispatch(signupRequestFail(error));
+      });
+  };
+};
+
+export const wallUpdate = wall => {
+  return {
+    type: actionTypes.USER_WALL_UPDATE,
+    wall: wall
+  };
+};
+
+export const setWall = (token, userId, wall) => {
+  return dispatch => {
+    axiosInstance
+      .patch("/users/" + userId + "/userData.json?auth=" + token, {
+        userId: userId,
+        wall: wall
+      })
+      .then(response => {
+        dispatch(wallUpdate(wall));
+      })
+      .catch(error => {
+        dispatch(signupRequestFail(error));
+      });
   };
 };
 

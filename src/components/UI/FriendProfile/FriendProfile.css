@@ -1,0 +1,23 @@
+.FriendProfile {
+  width: 80%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding-top: 72px;
+  align-items: center;
+}
+
+.Button {
+  height: 40px;
+  background-color: rgb(73, 157, 125);
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  border: 1px solid rgb(73, 157, 125);
+  border-radius: 2px;
+  margin: 0;
+  padding: 0 12px;
+  padding-top: 5px;
+  font-family: Monaco, courier;
+  font-size: 1rem;
+}

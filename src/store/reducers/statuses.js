@@ -31,19 +31,38 @@ const postStatusFail = (state, action) => {
   return updateObject(state, { loading: false });
 };
 
-const fetchedStatusesStart = (state, action) => {
+const fetchUserStatusesStart = (state, action) => {
   return updateObject(state, { loading: true });
 };
 
-const fetchedStatusesSuccess = (state, action) => {
+const fetchUserStatusesSuccess = (state, action) => {
   return updateObject(state, {
     statuses: action.statuses,
     loading: false
   });
 };
 
-const fetchedStatusesFail = (state, action) => {
+const fetchUserStatusesFail = (state, action) => {
   return updateObject(state, { loading: false });
+};
+
+const deleteStatusStart = (state, action) => {
+  return updateObject(state, { loading: true });
+};
+
+const deleteStatusSuccess = (state, action) => {
+  const prevStatuses = [...state.statuses];
+  const updatedStatuses = prevStatuses.filter(el => {
+    return el.id !== action.id;
+  });
+  return updateObject(state, {
+    statuses: updatedStatuses,
+    loading: false
+  });
+};
+
+const deleteStatusFail = (state, action) => {
+  return updateObject(state, { err: false });
 };
 
 const reducer = (state = initialState, action) => {
@@ -56,12 +75,18 @@ const reducer = (state = initialState, action) => {
       return postStatusSuccess(state, action);
     case actionTypes.POST_STATUS_FAIL:
       return postStatusFail(state, action);
-    case actionTypes.FETCHED_STATUSES_START:
-      return fetchedStatusesStart(state, action);
-    case actionTypes.FETCHED_STATUSES_SUCCESS:
-      return fetchedStatusesSuccess(state, action);
-    case actionTypes.FETCHED_STATUSES_FAIL:
-      return fetchedStatusesFail(state, action);
+    case actionTypes.FETCH_USER_STATUSES_START:
+      return fetchUserStatusesStart(state, action);
+    case actionTypes.FETCH_USER_STATUSES_SUCCESS:
+      return fetchUserStatusesSuccess(state, action);
+    case actionTypes.FETCH_USER_STATUSES_FAIL:
+      return fetchUserStatusesFail(state, action);
+    case actionTypes.DELETE_STATUS_START:
+      return deleteStatusStart(state, action);
+    case actionTypes.DELETE_STATUS_SUCCESS:
+      return deleteStatusSuccess(state, action);
+    case actionTypes.DELETE_STATUS_FAIL:
+      return deleteStatusFail(state, action);
     default:
       return state;
   }

@@ -6,13 +6,11 @@ import * as actions from '../../../store/actions/index';
 
 class Logout extends Component {
   componentDidMount () {
-    
-  console.log("Logout mounted...");
     this.props.onLogout();
   }
   
   render() {
-    return <Redirect to="/" />;
+    return <Redirect to="/react/emoji-pets" />;
   }
 }
 
