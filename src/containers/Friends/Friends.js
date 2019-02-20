@@ -6,6 +6,7 @@ import classes from "./Friends.css";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
 import * as actions from "../../store/actions/index";
 import { emojis } from "../../resources/Emojis/Emojis";
+import Spinner from "../../components/UI/Spinner/Spinner";
 import Friend from "../../components/UI/Friend/Friend";
 import FriendProfile from "../../components/UI/FriendProfile/FriendProfile";
 
@@ -14,11 +15,15 @@ class Friends extends Component {
     selectedUser: null,
     wallEdit: "",
     edittingWall: false,
-    petNameEdit: ""
+    petNameEdit: "",
+    isMounted: false
   };
 
   componentDidMount() {
-    this.props.onFetchUsers(this.props.token);
+    if (!this.props.users) {
+      this.props.onFetchUsers(this.props.token);
+    }
+    this.setState({isMounted: true});
   }
 
   userCardClicked = key => {
@@ -28,9 +33,12 @@ class Friends extends Component {
   setSelectedUserHandler = () => {
     this.setState({ selectedUser: null });
   };
-  
+
   editWallHandler = () => {
-    this.setState({ edittingWall: true, wallEdit: this.props.users[this.state.selectedUser].userData.wall });
+    this.setState({
+      edittingWall: true,
+      wallEdit: this.props.users[this.state.selectedUser].wall
+    });
   };
 
   cancelEditHandler = () => {
@@ -42,12 +50,9 @@ class Friends extends Component {
   };
 
   wallSaveHandler = () => {
-    this.props.onUpdateWall(
-      this.props.token,
-      this.state.selectedUser,
-      this.state.wallEdit,
-      true
-    );
+    this.props.onPatchUser(this.props.token, this.state.selectedUser, {
+      wall: this.state.wallEdit
+    });
     this.setState({
       wallEdit: "",
       edittingWall: false
@@ -55,27 +60,30 @@ class Friends extends Component {
   };
 
   render() {
+    if (!this.state.isMounted || this.props.loadingUsers || this.props.loadingStatuses){
+      return <Spinner />
+    }
     const users = [];
     for (let key in this.props.users) {
       users.push(
         <Friend
           key={key}
-          emojiChar={emojis[this.props.users[key].userData.emojiIndex]}
-          emojiPetName={this.props.users[key].userData.emojiPetName}
+          emojiChar={emojis[this.props.users[key].emojiIndex]}
+          emojiName={this.props.users[key].emojiName}
           clicked={() => this.userCardClicked(key)}
-          bio={this.props.users[key].userData.emojiBio}
+          bio={this.props.users[key].emojiBio}
         />
       );
     }
-
+    
+    console.log("props.users and state.selectedUser : ", this.props.users + ", " + this.state.selectedUser)
+    
     const display = this.state.selectedUser ? (
       <FriendProfile
         goBack={this.setSelectedUserHandler}
-        emojiPetName={
-          this.props.users[this.state.selectedUser].userData.emojiPetName
-        }
+        emojiName={this.props.users[this.state.selectedUser].emojiName}
         emojiChar={
-          emojis[this.props.users[this.state.selectedUser].userData.emojiIndex]
+          emojis[this.props.users[this.state.selectedUser].emojiIndex]
         }
         edittingWall={this.state.edittingWall}
         cancelEditHandler={this.cancelEditHandler}
@@ -98,22 +106,18 @@ class Friends extends Component {
 
 const mapStateToProps = state => {
   return {
-    isAuthenticated: state.auth.token !== null,
-    statuses: state.statuses.statuses,
-    loading: state.statuses.loading,
+    loadingStatuses: state.statuses.loading,
+    loadingUsers: state.users.loading,
     token: state.auth.token,
-    userId: state.auth.userId,
-    emojiIndex: state.auth.emojiIndex,
-    emojiPetName: state.auth.emojiPetName,
-    users: state.users.users,
-    wall: state.auth.wall
+    users: state.users.users
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     onFetchUsers: token => dispatch(actions.fetchUsers(token)),
-    onUpdateWall: (token, userId, wall) => dispatch(actions.patchWall(token, userId, wall))
+    onPatchUser: (token, userId, data) =>
+      dispatch(actions.patchUser(token, userId, data))
   };
 };
 

@@ -2,52 +2,31 @@ import * as actionTypes from "../actions/actionTypes";
 import { updateObject } from "../../shared/utility";
 
 const initialState = {
-  statuses: [],
-  loading: false,
-  posted: false,
-  userPet: ""
+  statuses: null,
+  loading: false
 };
 
-const postStatusInit = (state, action) => {
-  return updateObject(state, { posted: false });
-};
-
-const postStatusStart = (state, action) => {
+const start = (state, action) => {
   return updateObject(state, { loading: true });
 };
 
-const postStatusSuccess = (state, action) => {
-  const newPost = updateObject(action.postData, {
-    id: action.postId
-  });
-  return updateObject(state, {
-    loading: false,
-    posted: true,
-    statuses: state.statuses.concat(newPost)
-  });
-};
-
-const postStatusFail = (state, action) => {
+const fail = (state, action) => {
   return updateObject(state, { loading: false });
 };
 
-const fetchUserStatusesStart = (state, action) => {
-  return updateObject(state, { loading: true });
+const postStatusSuccess = (state, action) => {
+  console.log("status reducer: ", action.newStatus);
+  return updateObject(state, {
+    loading: false,
+    statuses: Object.assign(state.statuses, action.newStatus)
+  });
 };
 
-const fetchUserStatusesSuccess = (state, action) => {
+const fetchStatusesSuccess = (state, action) => {
   return updateObject(state, {
     statuses: action.statuses,
     loading: false
   });
-};
-
-const fetchUserStatusesFail = (state, action) => {
-  return updateObject(state, { loading: false });
-};
-
-const deleteStatusStart = (state, action) => {
-  return updateObject(state, { loading: true });
 };
 
 const deleteStatusSuccess = (state, action) => {
@@ -61,32 +40,18 @@ const deleteStatusSuccess = (state, action) => {
   });
 };
 
-const deleteStatusFail = (state, action) => {
-  return updateObject(state, { err: false });
-};
-
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case actionTypes.POST_INIT:
-      return postStatusInit(state, action);
-    case actionTypes.POST_STATUS_START:
-      return postStatusStart(state, action);
+    case actionTypes.STATUS_START:
+      return start(state, action);
+    case actionTypes.STATUS_FAIL:
+      return fail(state, action);
     case actionTypes.POST_STATUS_SUCCESS:
       return postStatusSuccess(state, action);
-    case actionTypes.POST_STATUS_FAIL:
-      return postStatusFail(state, action);
-    case actionTypes.FETCH_USER_STATUSES_START:
-      return fetchUserStatusesStart(state, action);
     case actionTypes.FETCH_USER_STATUSES_SUCCESS:
-      return fetchUserStatusesSuccess(state, action);
-    case actionTypes.FETCH_USER_STATUSES_FAIL:
-      return fetchUserStatusesFail(state, action);
-    case actionTypes.DELETE_STATUS_START:
-      return deleteStatusStart(state, action);
+      return fetchStatusesSuccess(state, action);
     case actionTypes.DELETE_STATUS_SUCCESS:
       return deleteStatusSuccess(state, action);
-    case actionTypes.DELETE_STATUS_FAIL:
-      return deleteStatusFail(state, action);
     default:
       return state;
   }

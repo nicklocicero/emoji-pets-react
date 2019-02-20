@@ -1,69 +1,92 @@
 import * as actionTypes from "./actionTypes";
 import axiosInstance from "../../axios-pets";
 
-export const fetchUsersSuccess = (data) => {
-  console.log("dispatched fetchUsersSuccess users: ", data)
+export const start = () => {
   return {
-    type: actionTypes.FETCH_USERS_SUCCESS,
-    users: data
+    type: actionTypes.USER_START
   };
 };
 
-export const fetchUsersFail = error => {
+export const fail = error => {
   return {
-    type: actionTypes.FETCH_USERS_FAIL,
+    type: actionTypes.USER_FAIL,
     error: error
   };
 };
 
-export const fetchUsersStart = () => {
+export const fetchUsersSuccess = users => {
   return {
-    type: actionTypes.FETCH_USERS_START
+    type: actionTypes.FETCH_USERS_SUCCESS,
+    users: users
   };
 };
 
-export const fetchUsers = (token) => {
+export const patchRequestSuccess = (data, userId) => {
+  return {
+    type: actionTypes.PATCH_USER_SUCCESS,
+    userId: userId,
+    data: data
+  };
+};
+
+export const putAddUserSuccess = (data, userId) => {
+  return {
+    type: actionTypes.PUT_ADD_USER_SUCCESS,
+    userId: userId,
+    data: data
+  };
+};
+
+export const fetchUsers = (token, userId) => {
   return dispatch => {
-    dispatch(fetchUsersStart());
+    dispatch(start());
     axiosInstance
       .get("/users.json?auth=" + token)
       .then(response => {
-        console.log("response from fetchUsers() ", response);
-        dispatch(fetchUsersSuccess(response));
+        dispatch(fetchUsersSuccess(response.data));
+        console.log("got fetchUsers() response");
+        if (!response.data.hasOwnProperty(userId)) {
+          console.log("Calling addUser() with userId...", userId);
+          dispatch(addUser(token, userId));
+        }
       })
       .catch(error => {
-        dispatch(fetchUsersFail(error));
+        dispatch(fail(error));
       });
   };
 };
 
-export const patchWallFail = error => {
-  return {
-    type: actionTypes.PATCH_WALL_FAIL,
-    error: error
-  };
-};
-
-export const patchWallSuccess = (wall, userId) => {
-  return {
-    type: actionTypes.PATCH_WALL_SUCCESS,
-    wall: wall,
-    userId: userId
-  };
-};
-
-export const patchWall = (token, userId, wall) => {
+export const patchUser = (token, userId, data) => {
   return dispatch => {
+    dispatch(start());
     axiosInstance
-      .patch("/users/" + userId + "/userData.json?auth=" + token, {
-        userId: userId,
-        wall: wall
-      })
+      .patch("/users/" + userId + ".json?auth=" + token, data)
       .then(response => {
-        dispatch(patchWallSuccess(wall, userId));
+        dispatch(patchRequestSuccess(data, userId));
       })
       .catch(error => {
-        dispatch(patchWallFail(error));
+        dispatch(fail(error));
+      });
+  };
+};
+
+export const addUser = (token, userId) => {
+  return dispatch => {
+    dispatch(start);
+    const newData = {
+      emojiName: "[add a name]",
+      emojiIndex: 0,
+      emojiBio: "[write a bio]",
+      wall: "Write on your wall..."
+    };
+    console.log("pre users put");
+    axiosInstance
+      .put("/users/" + userId + ".json?auth=" + token, newData)
+      .then(response => {
+        dispatch(putAddUserSuccess(newData, userId));
+      })
+      .catch(error => {
+        dispatch(fail(error));
       });
   };
 };

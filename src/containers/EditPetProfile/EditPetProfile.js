@@ -7,7 +7,8 @@ import Status from "../../components/UI/Status/Status";
 import { emojis } from "../../resources/Emojis/Emojis";
 
 import Wall from "../../components/EditPetProfile/Wall/Wall";
-import AboutMe from "../../components/EditPetProfile/AboutMe/AboutMe";
+// import AboutMe from "../../components/EditPetProfile/AboutMe/AboutMe";
+import Spinner from "../../components/UI/Spinner/Spinner";
 import classes from "./EditPetProfile.css";
 import Modal from "../../components/UI/Modal/Modal";
 import Aux from "../../hoc/Aux/Aux";
@@ -15,23 +16,34 @@ import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
 import * as actions from "../../store/actions/index";
 
 class EditPetProfile extends Component {
-  state = {
-    wall: "some writing from some people see?",
-    wallEdit: "",
-    statusInput: "",
-    edittingWall: false,
-    edittingPet: false,
-    emojiKeyEdit: null,
-    petNameEdit: ""
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      wallEdit: "",
+      statusInput: "",
+      edittingWall: false,
+      edittingPet: false,
+      emojiKeyEdit: null,
+      petNameEdit: "",
+      isMounted: false
+    };
+  }
 
-  componentWillMount() {
-    this.props.onFetchUsers(this.props.token);
-    this.props.onFetchUserStatuses(this.props.token, this.props.userId);
+  componentDidMount() {
+    if (!this.props.users) {
+      this.props.onFetchUsers(this.props.token, this.props.userId);
+    }
+    if (!this.props.statuses) {
+      this.props.onFetchStatuses(this.props.token);
+    }
+    this.setState({ isMounted: true });
   }
 
   saveWallEditHandler = () => {
-    this.setState({ edittingWall: true, wallEdit: this.props.wall });
+    this.setState({
+      edittingWall: true,
+      wallEdit: this.props.users[this.props.userId].wall
+    });
   };
 
   cancelEditHandler = () => {
@@ -43,11 +55,9 @@ class EditPetProfile extends Component {
   };
 
   wallSaveHandler = () => {
-    this.props.onUpdateWall(
-      this.props.token,
-      this.props.userId,
-      this.state.wallEdit
-    );
+    this.props.onPatchUser(this.props.token, this.props.userId, {
+      wall: this.state.wallEdit
+    });
     this.setState({
       wallEdit: "",
       edittingWall: false
@@ -61,14 +71,14 @@ class EditPetProfile extends Component {
   editPetHandler = () => {
     this.setState({
       edittingPet: true,
-      petNameEdit: this.props.emojiPetName
+      petNameEdit: this.props.users[this.props.userId].emojiName
     });
   };
 
-  petSaveHandler = (key, name) => {
-    this.props.onSetPet(this.props.token, this.props.userId, key, name);
+  petSaveHandler = data => {
+    this.props.onPatchUser(this.props.token, this.props.userId, data);
     this.setState({
-      petName: name,
+      petName: data.name,
       petNameEdit: "",
       edittingPet: false
     });
@@ -90,12 +100,10 @@ class EditPetProfile extends Component {
     event.preventDefault();
     const newStatus = {
       status: this.state.statusInput,
-      userId: this.props.userId,
-      emojiIndex: this.props.emojiIndex,
-      emojiPetName: this.props.emojiPetName
+      userId: this.props.userId
     };
     this.setState({ statusInput: "" });
-    this.props.onPostStatus(newStatus, this.props.token);
+    this.props.onPostStatus(this.props.token, newStatus);
   };
 
   petNameInputHandler = event => {
@@ -103,20 +111,26 @@ class EditPetProfile extends Component {
   };
 
   render() {
+    if (
+      !this.state.isMounted ||
+      this.props.loadingUsers ||
+      this.props.loadingStatuses
+    ) {
+      return <Spinner />;
+    }
     const statuses = [];
-
-    for (let i = this.props.statuses.length - 1; i >= 0; i--) {
+    console.log(this.props.statuses);
+    
+    console.log("users: ", this.props.users);
+    for (let key in this.props.statuses) {
       // Going backwards to get most recent first
+      console.log("key ", key);
       statuses.push(
         <Status
-          emoji={
-            emojis[
-              this.props.statuses[i].emojiIndex
-            ]
-          }
-          content={this.props.statuses[i].status}
-          key={i}
-          name={this.props.statuses[i].emojiPetName}
+          emoji={emojis[this.props.users[this.props.statuses[key].userId].emojiIndex]}
+          content={this.props.statuses[key].status}
+          key={key}
+          name={this.props.users[this.props.statuses[key].userId].emojiName}
         />
       );
     }
@@ -175,7 +189,10 @@ class EditPetProfile extends Component {
           </button>
           <button
             onClick={() =>
-              this.petSaveHandler(emojiIndex, this.state.petNameEdit)
+              this.petSaveHandler({
+                emojiIndex: emojiIndex,
+                emojiName: this.state.petNameEdit
+              })
             }
             className={classes.save}
           >
@@ -184,8 +201,7 @@ class EditPetProfile extends Component {
         </Modal>
 
         <div className={classes.EditPetProfile}>
-          { 
-            /*  This will be updated later to edit the bio.... to be continued.
+          {/*  This will be updated later to edit the bio.... to be continued.
             <AboutMe
             value={this.state.statusInput}
             changed={event => this.statusInputHandler(event)}
@@ -195,9 +211,9 @@ class EditPetProfile extends Component {
           /> */}
           <Wall
             isEditable={this.state.editable}
-            wall={this.props.wall}
-            pet={emojis[this.props.emojiIndex]}
-            petName={this.props.emojiPetName}
+            wall={this.props.users[this.props.userId].wall}
+            pet={emojis[this.props.users[this.props.userId].emojiIndex]}
+            petName={this.props.users[this.props.userId].emojiName}
             petClicked={this.editPetHandler}
             wallClicked={this.saveWallEditHandler}
           />
@@ -217,31 +233,25 @@ class EditPetProfile extends Component {
 
 const mapStateToProps = state => {
   return {
-    isAuthenticated: state.auth.token !== null,
-    statuses: state.statuses.statuses,
-    loading: state.statuses.loading,
+    loadingStatuses: state.statuses.loading,
+    loadingUsers: state.users.loading,
     token: state.auth.token,
     userId: state.auth.userId,
-    emojiIndex: state.auth.emojiIndex,
-    emojiPetName: state.auth.emojiPetName,
-    wall: state.auth.wall,
-    users: state.users.users
+    users: state.users.users,
+    statuses: state.statuses.statuses
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     onSetAuthRedirectPath: path => dispatch(actions.setAuthRedirectPath(path)),
-    onPostStatus: (postData, token) =>
-      dispatch(actions.postStatus(postData, token)),
-    onFetchUserStatuses: (token, userId) =>
-      dispatch(actions.fetchUserStatuses(token, userId)),
-    onSetPet: (token, userId, emojiIndex, emojiPetName) =>
-      dispatch(actions.setPet(token, userId, emojiIndex, emojiPetName)),
-    onFetchUsers: token => dispatch(actions.fetchUsers(token)),
-    onUpdateWall: (token, userId, wall) => {
-      dispatch(actions.setWall(token, userId, wall));
-    }
+    onFetchUsers: (token, userId) =>
+      dispatch(actions.fetchUsers(token, userId)),
+    onPatchUser: (token, userId, data) =>
+      dispatch(actions.patchUser(token, userId, data)),
+    onPostStatus: (token, postData) =>
+      dispatch(actions.postStatus(token, postData)),
+    onFetchStatuses: token => dispatch(actions.fetchStatuses(token))
   };
 };
 

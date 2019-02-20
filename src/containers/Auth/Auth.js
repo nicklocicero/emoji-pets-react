@@ -44,21 +44,21 @@ class Auth extends Component {
     },
     isSignup: false,
     emojiIndex: null,
-    emojiPetName: "",
+    emojiName: "",
     emojiBio: ""
   };
 
-  componentWillMount() {
+  componentDidMount() {
     if (this.props.authRedirectPath) {
       this.props.onSetAuthRedirectPath();
     }
   }
 
-  componentWillUnmount() {
-    if (this.props.auth) {
-      this.props.onFetchUsers(this.props.auth);
-    }
-  }
+  // componentWillUnmount() {
+  //   if (this.props.auth) {
+  //     this.props.onFetchUsers(this.props.auth);
+  //   }
+  // }
   
   inputChangedHandler = (event, controlName) => {
     const updatedControls = updateObject(this.state.controls, {
@@ -79,13 +79,7 @@ class Auth extends Component {
     this.props.onAuth(
       this.state.controls.email.value,
       this.state.controls.password.value,
-      this.state.isSignup,
-      {
-        emojiIndex: this.state.emojiIndex,
-        emojiPetName: this.state.emojiPetName,
-        emojiBio: this.state.emojiBio,
-        wall: ""
-      }
+      this.state.isSignup
     );
   };
 
@@ -100,7 +94,7 @@ class Auth extends Component {
   };
 
   setEmojiNameHandler = event => {
-    this.setState({ emojiPetName: event.target.value });
+    this.setState({ emojiName: event.target.value });
   };
 
   setEmojiBioHandler = event => {
@@ -155,7 +149,7 @@ class Auth extends Component {
         setEmojiHandler={this.setEmojiHandler}
         setEmojiNameHandler={event => this.setEmojiNameHandler(event)}
         emojiIndex={this.state.emojiIndex}
-        emojiPetName={this.state.emojiPetName}
+        emojiName={this.state.emojiName}
         emojiBio={this.state.emojiBio}
         setEmojiBioHandler={this.setEmojiBioHandler}
       />
@@ -192,10 +186,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
-    onAuth: (email, password, isSignup, userInformation) =>
-      dispatch(actions.auth(email, password, isSignup, userInformation)),
-    onSetAuthRedirectPath: () => dispatch(actions.setAuthRedirectPath("/")),
-    onFetchUsers: token => dispatch(actions.fetchUsers(token))
+    onAuth: (email, password, isSignup) =>
+      dispatch(actions.auth(email, password, isSignup)),
+    onSetAuthRedirectPath: () => dispatch(actions.setAuthRedirectPath("/"))
   };
 };
 

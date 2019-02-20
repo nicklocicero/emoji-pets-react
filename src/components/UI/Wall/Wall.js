@@ -45,7 +45,7 @@ const wall = props => {
             className={classes.WallButton}
             onClick={() => props.editWallHandler()}
           >
-            CHANGE {props.emojiPetName.toUpperCase()}'S WALL
+            CHANGE {props.emojiName.toUpperCase()}'S WALL
           </button>
         </div>
       </div>

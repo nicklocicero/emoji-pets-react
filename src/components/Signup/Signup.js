@@ -16,7 +16,7 @@ const signup = props => {
       <Input
         elementType="input"
         label="Emoji Pet's Name"
-        value={props.emojiPetName}
+        value={props.emojiName}
         changed={props.setEmojiNameHandler}
       />
       <Input

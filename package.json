@@ -2,6 +2,7 @@
   "name": "emoji-pets-web",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://nicholaslocicero.com/react/emoji-pets/",
   "dependencies": {
     "@babel/core": "7.2.2",
     "@svgr/webpack": "4.1.0",

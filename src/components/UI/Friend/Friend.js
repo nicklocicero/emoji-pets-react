@@ -6,7 +6,7 @@ import { Textfit } from "react-textfit";
 const friend = props => {
   return (
     <div className={classes.Friend} onClick={props.clicked}>
-      <div style={{fontSize: '22px'}}>{props.emojiPetName}</div>
+      <div style={{fontSize: '22px'}}>{props.emojiName}</div>
       <Textfit
         mode="single"
         forceSingleModeWidth={true}

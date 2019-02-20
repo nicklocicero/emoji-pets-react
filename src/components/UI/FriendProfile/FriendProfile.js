@@ -11,12 +11,12 @@ const friendProfile = props => {
           {"← BACK TO FRIENDS"}
         </button>
       </div>
-      <h1>{props.emojiPetName}</h1>
+      <h1>{props.emojiName}</h1>
       <p style={{ fontSize: "144px", padding: 0, margin: 0 }}>
         {props.emojiChar}
       </p>
       <Wall
-        emojiPetName={props.emojiPetName}
+        emojiName={props.emojiName}
         edittingWall={props.edittingWall}
         cancelEditHandler={props.cancelEditHandler}
         wallEdit={props.wallEdit}

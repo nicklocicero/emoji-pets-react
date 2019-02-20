@@ -13,18 +13,21 @@ class Home extends Component {
   state = {
     statusInput: ""
   };
-  
+
   componentDidMount() {
-    this.props.onFetchStatuses(this.props.token);
+    if (!this.props.statuses) {
+      this.props.onFetchStatuses(this.props.token);
+    }
+    if (!this.props.users) {
+      this.props.onFetchUsers(this.props.token, this.props.userId);
+    }
   }
 
   addStatusHandler = event => {
     event.preventDefault();
     const newStatus = {
       status: this.state.statusInput,
-      userId: this.props.userId,
-      emojiIndex: this.props.emojiIndex,
-      emojiPetName: this.props.emojiPetName
+      userId: this.props.userId
     };
     this.setState({ statusInput: "" });
     this.props.onPostStatus(newStatus, this.props.token);
@@ -43,16 +46,10 @@ class Home extends Component {
     for (let i = this.props.statuses.length - 1; i >= 0; i--) {
       statuses.push(
         <Status
-          emoji={
-            emojis[
-              this.props.statuses[i].emojiIndex
-            ]
-          }
+          emoji={emojis[this.props.statuses[i].emojiIndex]}
           content={this.props.statuses[i].status}
           key={i}
-          name={
-            this.props.statuses[i].emojiPetName
-          }
+          name={this.props.statuses[i].emojiName}
           isUsers={this.props.statuses[i].userId === this.props.userId}
           onPress={() =>
             this.deleteStatus(this.props.token, this.props.statuses[i].id)
@@ -79,22 +76,20 @@ class Home extends Component {
 
 const mapStateToProps = state => {
   return {
-    isAuthenticated: state.auth.token !== null,
-    statuses: state.statuses.statuses,
     loading: state.statuses.loading,
     token: state.auth.token,
     userId: state.auth.userId,
-    emojiIndex: state.auth.emojiIndex,
-    emojiPetName: state.auth.emojiPetName,
+    statuses: state.statuses.statuses,
     users: state.users.users
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
+    onFetchUsers: (token, userId) => dispatch(actions.fetchUsers(token, userId)),
     onPostStatus: (postData, token) =>
       dispatch(actions.postStatus(postData, token)),
-    onFetchStatuses: token => dispatch(actions.fetchUserStatuses(token)),
+    onFetchStatuses: token => dispatch(actions.fetchStatuses(token)),
     onDeleteStatus: (token, id) => dispatch(actions.deleteStatus(token, id))
   };
 };

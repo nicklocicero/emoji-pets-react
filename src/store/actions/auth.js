@@ -42,45 +42,10 @@ export const checkAuthTimeout = expirationDate => {
   };
 };
 
-export const signupRequestSuccess = (userInformation) => {
-  return {
-    type: actionTypes.SIGNUP_REQUEST_SUCCESS,
-    userInformation: userInformation
-  };
-};
-
-export const signupRequestFail = error => {
-  return {
-    type: actionTypes.SIGNUP_REQUEST_FAIL,
-    error: error
-  };
-};
-
-export const getUserData = response => {
-  return dispatch => {
-    axiosInstance
-      .get(
-        "/users/" +
-          response.data.localId +
-          "/userData.json?auth=" +
-          response.data.idToken
-      )
-      .then(response => {
-        dispatch(
-          signupRequestSuccess(response.data)
-        );
-      })
-      .catch(error => {
-        dispatch(signupRequestFail(error));
-      });
-  };
-};
-
 export const auth = (
   email,
   password,
-  isSignup,
-  userInformation
+  isSignup
 ) => {
   return dispatch => {
     dispatch(authStart());
@@ -94,10 +59,6 @@ export const auth = (
       config.apiKey;
 
     if (isSignup) {
-      if (userInformation.emojiIndex === null || userInformation.emojiPetName === "" || userInformation.emojiBio === "") {
-        dispatch(authFail("Enter all information please."));
-        return;
-      }
       url =
         "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=" +
         config.apiKey;
@@ -113,28 +74,6 @@ export const auth = (
         localStorage.setItem("userId", response.data.localId);
         dispatch(authSuccess(response.data.idToken, response.data.localId));
         dispatch(checkAuthTimeout(response.data.expiresIn));
-        userInformation["userId"] = response.data.localId
-        if (isSignup) {
-          axiosInstance
-            .put(
-              "/users/" +
-                response.data.localId +
-                "/userData.json?auth=" +
-                response.data.idToken,
-              userInformation
-            )
-            .then(response => {
-              dispatch(
-                signupRequestSuccess(userInformation)
-              );
-            })
-            .catch(error => {
-              dispatch(signupRequestFail(error));
-            });
-        } else {
-          // console.log("Id: ", response.data.localId, " | Token: ", response.data.idToken);
-          dispatch(getUserData(response));
-        }
       })
       .catch(err => {
         dispatch(authFail(err.response.data.error));
@@ -146,47 +85,6 @@ export const setAuthRedirectPath = path => {
   return {
     type: actionTypes.SET_AUTH_REDIRECT_PATH,
     path: path
-  };
-};
-
-export const setPet = (token, userId, emojiIndex, emojiPetName) => {
-  return dispatch => {
-    axiosInstance
-      .patch("/users/" + userId + "/userData.json?auth=" + token, {
-        emojiIndex: emojiIndex,
-        emojiPetName: emojiPetName
-      })
-      .then(response => {
-        dispatch(
-          signupRequestSuccess(response.data)
-        );
-      })
-      .catch(error => {
-        dispatch(signupRequestFail(error));
-      });
-  };
-};
-
-export const wallUpdate = wall => {
-  return {
-    type: actionTypes.USER_WALL_UPDATE,
-    wall: wall
-  };
-};
-
-export const setWall = (token, userId, wall) => {
-  return dispatch => {
-    axiosInstance
-      .patch("/users/" + userId + "/userData.json?auth=" + token, {
-        userId: userId,
-        wall: wall
-      })
-      .then(response => {
-        dispatch(wallUpdate(wall));
-      })
-      .catch(error => {
-        dispatch(signupRequestFail(error));
-      });
   };
 };
 
