@@ -8,7 +8,6 @@ import Spinner from "../../components/UI/Spinner/Spinner";
 import classes from "./Auth.css";
 import * as actions from "../../store/actions/index";
 import { updateObject, checkValidity } from "../../shared/utility";
-import Signup from "../../components/Signup/Signup";
 
 class Auth extends Component {
   state = {
@@ -25,7 +24,8 @@ class Auth extends Component {
           isEmail: true
         },
         valid: false,
-        touched: false
+        touched: false,
+        forSignup: false
       },
       password: {
         elementType: "input",
@@ -39,13 +39,25 @@ class Auth extends Component {
           minLength: 6
         },
         valid: false,
-        touched: false
+        touched: false,
+        forSignup: false
+      },
+      confirmPassword: {
+        elementType: "input",
+        elementConfig: {
+          type: "password",
+          placeholder: "Confirm Password"
+        },
+        value: "",
+        validation: {
+          equalTo: "password"
+        },
+        valid: false,
+        touched: false,
+        forSignup: true
       }
     },
-    isSignup: false,
-    emojiIndex: null,
-    emojiName: "",
-    emojiBio: ""
+    isSignup: false
   };
 
   componentDidMount() {
@@ -54,20 +66,21 @@ class Auth extends Component {
     }
   }
 
-  // componentWillUnmount() {
-  //   if (this.props.auth) {
-  //     this.props.onFetchUsers(this.props.auth);
-  //   }
-  // }
-  
+  showSignup = showSignup => {
+    this.setState({ isSignup: showSignup });
+  };
+
   inputChangedHandler = (event, controlName) => {
     const updatedControls = updateObject(this.state.controls, {
       [controlName]: updateObject(this.state.controls[controlName], {
         value: event.target.value,
-        valid: checkValidity(
-          event.target.value,
-          this.state.controls[controlName].validation
-        ),
+        valid:
+          controlName === "confirmPassword"
+            ? event.target.value === this.state.controls.password.value || !this.state.isSignup
+            : checkValidity(
+                event.target.value,
+                this.state.controls[controlName].validation
+              ),
         touched: true
       })
     });
@@ -83,37 +96,17 @@ class Auth extends Component {
     );
   };
 
-  switchAuthModeHandler = () => {
-    this.setState(prevState => {
-      return { isSignup: !prevState.isSignup };
-    });
-  };
-
-  setEmojiHandler = index => {
-    this.setState({ emojiIndex: index });
-  };
-
-  setEmojiNameHandler = event => {
-    this.setState({ emojiName: event.target.value });
-  };
-
-  setEmojiBioHandler = event => {
-    if (event.target.value.length < 171) {
-      this.setState({
-        emojiBio: event.target.value
-      });
-    }
-  };
-
   render() {
     const formElementsArray = [];
     for (let key in this.state.controls) {
+      if (!this.state.isSignup && key === "confirmPassword") {
+        continue;
+      }
       formElementsArray.push({
         id: key,
         config: this.state.controls[key]
       });
     }
-
     let form = formElementsArray.map(formElement => (
       <Input
         key={formElement.id}
@@ -127,6 +120,16 @@ class Auth extends Component {
         changed={event => this.inputChangedHandler(event, formElement.id)}
       />
     ));
+    
+    let enableSubmit = true;
+    for (let control in this.state.controls) {
+      if (this.state.isSignup && this.state.controls[control].forSignup) {
+        enableSubmit = this.state.controls[control].valid;
+      } else if (!this.state.controls[control].forSignup) {
+        enableSubmit = this.state.controls[control].valid;
+      }
+    }
+    console.log("pre submission", enableSubmit);
 
     if (this.props.loading) {
       form = <Spinner />;
@@ -144,31 +147,44 @@ class Auth extends Component {
       authRedirect = <Redirect to={this.props.authRedirectPath} />;
     }
 
-    const signup = (
-      <Signup
-        setEmojiHandler={this.setEmojiHandler}
-        setEmojiNameHandler={event => this.setEmojiNameHandler(event)}
-        emojiIndex={this.state.emojiIndex}
-        emojiName={this.state.emojiName}
-        emojiBio={this.state.emojiBio}
-        setEmojiBioHandler={this.setEmojiBioHandler}
-      />
-    );
-
     return (
       <div className={classes.Auth}>
         {authRedirect}
         {errorMessage}
-        <Button btnType="Danger" clicked={this.switchAuthModeHandler}>
-          {this.state.isSignup
-            ? "SWITCH TO SIGNIN"
-            : "ARE YOU NEW? CLICK HERE TO SIGNUP!"}
-        </Button>
-        <form onSubmit={this.submitHandler}>
-          {this.state.isSignup ? signup : null}
-          {form}
-          <Button btnType="Success">Submit</Button>
-        </form>
+        <div>
+          <div>
+            <button
+              className={classes.TabButton}
+              style={
+                this.state.isSignup
+                  ? { backgroundColor: "#ccc" }
+                  : { borderBottom: "0px" }
+              }
+              onClick={() => this.showSignup(false)}
+            >
+              signin
+            </button>
+            <button
+              className={classes.TabButton}
+              style={
+                !this.state.isSignup
+                  ? { backgroundColor: "#ccc" }
+                  : { borderBottom: "0px" }
+              }
+              onClick={() => this.showSignup(true)}
+            >
+              signup
+            </button>
+          </div>
+          <div className={classes.FormDiv}>
+            <form onSubmit={this.submitHandler}>
+              {form}
+              <Button btnType="Success" disabled={!enableSubmit}>
+                Submit
+              </Button>
+            </form>
+          </div>
+        </div>
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Textfit } from "react-textfit";
 
 import classes from "./Wall.css";

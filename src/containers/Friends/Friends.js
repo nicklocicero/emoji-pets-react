@@ -90,7 +90,7 @@ class Friends extends Component {
         wallEdit={this.state.wallEdit}
         wallEditHandler={this.wallEditHandler}
         editWallHandler={this.editWallHandler}
-        wall={this.props.users[this.state.selectedUser].userData.wall}
+        wall={this.props.users[this.state.selectedUser].wall}
         wallSaveHandler={this.wallSaveHandler}
       />
     ) : (

@@ -1,6 +1,5 @@
 import axios from "axios";
 import { config } from "../../config";
-import axiosInstance from "../../axios-pets";
 
 import * as actionTypes from "./actionTypes";
 

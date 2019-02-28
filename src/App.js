@@ -45,8 +45,8 @@ class App extends Component {
           <Route path="/react/emoji-pets/logout" component={Logout} />
           <Route path="/react/emoji-pets/edit-pet-profile" exact component={asyncEditPetProfile} />
           <Route path="/react/emoji-pets/friends" exact component={asyncFriends} />
-          <Route path="/react/emoji-pets" exact component={asyncHome} />
-          <Redirect to="/react/emoji-pets" />
+          <Route path="/react/emoji-pets/Home" component={asyncHome} />
+          <Redirect to="/react/emoji-pets/Home" />
         </Switch>
       );
     }

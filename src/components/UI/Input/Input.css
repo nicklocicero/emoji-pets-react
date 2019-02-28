@@ -1,9 +1,14 @@
 .Input {
   width: 100%;
   padding: 10px;
-  margin-top: 20px;
   box-sizing: border-box;
+  /* animation: fade 2s linear; */
 }
+
+/* @keyframes fade {
+  0% { display: none }
+  100% { display: block }
+} */
 
 .Label {
   font-weight: bold;

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 
 import EmojiPicker from "./EmojiPicker/EmojiPicker";
 import Input from "../UI/Input/Input";

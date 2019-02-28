@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import axios from "../../axios-pets";
 
 import classes from "./Home.css";
+import Spinner from "../../components/UI/Spinner/Spinner";
 import BigInput from "../../components/UI/BigInput/BigInput";
 import Status from "../../components/UI/Status/Status";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
@@ -11,7 +12,8 @@ import { emojis } from "../../resources/Emojis/Emojis";
 
 class Home extends Component {
   state = {
-    statusInput: ""
+    statusInput: "",
+    isMounted: false,
   };
 
   componentDidMount() {
@@ -21,6 +23,7 @@ class Home extends Component {
     if (!this.props.users) {
       this.props.onFetchUsers(this.props.token, this.props.userId);
     }
+    this.setState({ isMounted: true });
   }
 
   addStatusHandler = event => {
@@ -42,6 +45,13 @@ class Home extends Component {
   };
 
   render() {
+    if (
+      !this.state.isMounted ||
+      this.props.loadingUsers ||
+      this.props.loadingStatuses
+    ) {
+      return <Spinner />;
+    }
     const statuses = [];
     for (let i = this.props.statuses.length - 1; i >= 0; i--) {
       statuses.push(
@@ -76,7 +86,8 @@ class Home extends Component {
 
 const mapStateToProps = state => {
   return {
-    loading: state.statuses.loading,
+    loadingStatuses: state.statuses.loading,
+    loadingUsers: state.users.loading,
     token: state.auth.token,
     userId: state.auth.userId,
     statuses: state.statuses.statuses,
